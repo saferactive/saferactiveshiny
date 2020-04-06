@@ -20,7 +20,7 @@ ui <- fluidPage(
   sidebarPanel(
     selectInput(inputId = "casualty_type", label = "Casualty type", choices = casualty_types),
     selectInput(inputId = "level", label = "Level of aggregation", choices = geographic_levels, selected = "region"),
-    sliderInput(inputId = "years", "years", 2000, 2030, value = c(2014, 2018)),
+    sliderInput(inputId = "years", "Date range", 2000, 2030, value = c(2014, 2018)),
     selectInput(inputId = "measure", label = "Measure of Safety (not yet implemented)", choices = c("Cycling KSI/bkm", "Walking KSI/bkm", "Cycling KSI absolute")),
     actionButton(inputId = "roads", label = "Roads viz"),
     actionButton(inputId = "ui", label = "Additional user interface here!")
