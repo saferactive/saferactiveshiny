@@ -1,5 +1,6 @@
 library(sf)
 library(shiny)
+# library(plotly)
 library(mapdeck)
 library(tidyverse)
 
@@ -13,9 +14,11 @@ crashes$year = lubridate::year(crashes$date)
 crashes$month = lubridate::round_date(crashes$date, unit = "month")
 
 geographic_levels = c("region", "police force", "local authority", "constituency", "heatmap")
+casualty_types = c(Walking = "Pedestrian", Cycling = "Cyclist")
 
 ui <- fluidPage(
   sidebarPanel(
+    selectInput(inputId = "casualty_type", label = "Casualty type", choices = casualty_types),
     selectInput(inputId = "level", label = "Level of aggregation", choices = geographic_levels, selected = "region"),
     sliderInput(inputId = "years", "years", 2000, 2030, value = c(2014, 2018)),
     selectInput(inputId = "measure", label = "Measure of Safety (not yet implemented)", choices = c("Cycling KSI/bkm", "Walking KSI/bkm", "Cycling KSI absolute")),
@@ -25,6 +28,7 @@ ui <- fluidPage(
   , mainPanel(
     mapdeckOutput(outputId = "map"),
     textOutput(outputId = "text"),
+    # plotly::plotlyOutput(outputId = "plot1")
     plotOutput(outputId = "plot1")
   )
 )
@@ -80,6 +84,7 @@ server <- function(input, output) {
 
 # time series plot --------------------------------------------------------
 
+  # output$plot1 = plotly::renderPlotly(expr = {
   output$plot1 = renderPlot(expr = {
     
     cas_monthly = crashes_year() %>%
@@ -101,17 +106,15 @@ server <- function(input, output) {
     cas_long = gather(cas_monthly, Collision_type, Number, -month)
     cas_long = cas_long %>% separate(data = ., col = Collision_type, into = c("Mode", "Severity"), sep = "_")
     
-    ggthemr::ggthemr(palette = "flat")
-    
     # Alternative with colours for crash types
     cas_long = cas_long %>% 
-      filter(Mode != "Total")
+      filter(Mode == input$casualty_type)
     p1 = ggplot(cas_long) +
       geom_line(aes(month, Number, colour = Severity)) +
-      facet_grid(. ~ Mode) +
       scale_y_log10() +
       ylab("Casualties/month") +
-      xlab("")
+      xlab("") + 
+      theme_minimal()
     
     p1
     
