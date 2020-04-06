@@ -1,6 +1,6 @@
 library(sf)
 library(shiny)
-# library(plotly)
+library(plotly)
 library(mapdeck)
 library(tidyverse)
 
@@ -28,8 +28,8 @@ ui <- fluidPage(
   , mainPanel(
     mapdeckOutput(outputId = "map"),
     textOutput(outputId = "text"),
-    # plotly::plotlyOutput(outputId = "plot1")
-    plotOutput(outputId = "plot1")
+    plotly::plotlyOutput(outputId = "plot1")
+    # plotOutput(outputId = "plot1")
   )
 )
 
@@ -84,8 +84,8 @@ server <- function(input, output) {
 
 # time series plot --------------------------------------------------------
 
-  # output$plot1 = plotly::renderPlotly(expr = {
-  output$plot1 = renderPlot(expr = {
+  output$plot1 = plotly::renderPlotly(expr = {
+  # output$plot1 = renderPlot(expr = {
     
     cas_monthly = crashes_year() %>%
       sf::st_drop_geometry() %>% 
@@ -109,10 +109,11 @@ server <- function(input, output) {
     # Alternative with colours for crash types
     cas_long = cas_long %>% 
       filter(Mode == input$casualty_type)
+    cas_long$Number = cas_long$Number * 12
     p1 = ggplot(cas_long) +
       geom_line(aes(month, Number, colour = Severity)) +
       scale_y_log10() +
-      ylab("Casualties/month") +
+      ylab("Casualties/year") +
       xlab("") + 
       theme_minimal()
     
