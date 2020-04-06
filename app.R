@@ -1,6 +1,7 @@
 library(sf)
 library(shiny)
 library(mapdeck)
+library(tidyverse)
 
 if(!file.exists("casualties_active_london.Rds")) {
   download.file("https://github.com/saferactive/saferactiveshiny/releases/download/0.0.2/casualties_active_london.Rds",
@@ -9,6 +10,7 @@ if(!file.exists("casualties_active_london.Rds")) {
 
 crashes = readRDS("casualties_active_london.Rds")
 crashes$year = lubridate::year(crashes$date)
+crashes$month = lubridate::round_date(crashes$date, unit = "month")
 
 geographic_levels = c("region", "police force", "local authority", "constituency", "heatmap")
 
@@ -22,7 +24,8 @@ ui <- fluidPage(
   )
   , mainPanel(
     mapdeckOutput(outputId = "map"),
-    textOutput(outputId = "text")
+    textOutput(outputId = "text"),
+    plotOutput(outputId = "plot1")
   )
 )
 
@@ -73,6 +76,46 @@ server <- function(input, output) {
   })
   
   output$text = renderText(input$years)
+  
+
+# time series plot --------------------------------------------------------
+
+  output$plot1 = renderPlot(expr = {
+    
+    cas_monthly = crashes_year() %>%
+      sf::st_drop_geometry() %>% 
+      group_by(month) %>%
+      summarise(
+        Total_Slight = sum(accident_severity == "Slight"),
+        Pedestrian_Slight = sum(accident_severity == "Slight" & casualty_type == "Pedestrian", na.rm = TRUE),
+        Cyclist_Slight = sum(accident_severity == "Slight" & casualty_type == "Cyclist", na.rm = TRUE),
+        Total_Serious = sum(accident_severity == "Serious"),
+        Pedestrian_Serious = sum(accident_severity == "Serious" & casualty_type == "Pedestrian", na.rm = TRUE),
+        Cyclist_Serious = sum(accident_severity == "Serious" & casualty_type == "Cyclist", na.rm = TRUE),
+        Total_Fatal = sum(accident_severity == "Fatal"),
+        Pedestrian_Fatal = sum(accident_severity == "Fatal" & casualty_type == "Pedestrian", na.rm = TRUE),
+        Cyclist_Fatal = sum(accident_severity == "Fatal" & casualty_type == "Cyclist", na.rm = TRUE),
+      )
+    cas_monthly = cas_monthly[-1, ]
+    cas_monthly = cas_monthly[-nrow(cas_monthly), ]
+    cas_long = gather(cas_monthly, Collision_type, Number, -month)
+    cas_long = cas_long %>% separate(data = ., col = Collision_type, into = c("Mode", "Severity"), sep = "_")
+    
+    ggthemr::ggthemr(palette = "flat")
+    
+    # Alternative with colours for crash types
+    cas_long = cas_long %>% 
+      filter(Mode != "Total")
+    p1 = ggplot(cas_long) +
+      geom_line(aes(month, Number, colour = Severity)) +
+      facet_grid(. ~ Mode) +
+      scale_y_log10() +
+      ylab("Casualties/month") +
+      xlab("")
+    
+    p1
+    
+  })
   
 }
 
