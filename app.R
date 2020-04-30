@@ -17,6 +17,11 @@ geographic_levels = c("region", "police force", "local authority", "constituency
 casualty_types = c(Walking = "Pedestrian", Cycling = "Cyclist")
 
 ui <- fluidPage(
+  shiny::sidebarPanel(
+    width = 12,
+    h3("SaferActive: actionable evidence for making roads safer for walking and cycling"),
+    shiny::a("https://github.com/saferactive")
+    ),
   sidebarPanel(
     selectInput(inputId = "casualty_type", label = "Casualty type", choices = casualty_types),
     selectInput(inputId = "level", label = "Level of aggregation", choices = geographic_levels, selected = "region"),
