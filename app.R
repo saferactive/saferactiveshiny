@@ -20,7 +20,7 @@ ui <- fluidPage(
   shiny::sidebarPanel(
     width = 12,
     h3("SaferActive: actionable evidence for making roads safer for walking and cycling"),
-    shiny::a("https://github.com/saferactive", href = "https://github.com/saferactive")
+    shiny::tags$a(href = "https://github.com/saferactive", "https://github.com/saferactive", target = "_blank")
     ),
   sidebarPanel(
     selectInput(inputId = "casualty_type", label = "Casualty type", choices = casualty_types),
