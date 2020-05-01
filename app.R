@@ -13,7 +13,7 @@ crashes = readRDS("casualties_active_london.Rds")
 crashes$year = lubridate::year(crashes$date)
 crashes$month = lubridate::round_date(crashes$date, unit = "month")
 
-geographic_levels = c("region", "police force", "local authority", "constituency", "heatmap")
+geographic_levels = c("roads", "region", "police force", "local authority", "constituency", "heatmap")
 casualty_types = c(Walking = "Pedestrian", Cycling = "Cyclist")
 
 ui <- fluidPage(
